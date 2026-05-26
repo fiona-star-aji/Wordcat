@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>냥냥 단어 테스트</title>
+
+<style>
+
+body{
+    margin:0;
+    padding:20px;
+    background:#fff7f9;
+    font-family:'Arial', sans-serif;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+}
+
+.title{
+    text-align:center;
+    font-size:42px;
+    color:#ff6fa5;
+    font-weight:bold;
+    margin-bottom:20px;
+}
+
+.quiz-box{
+    background:white;
+    border-radius:30px;
+    padding:30px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.08);
+}
+
+.top{
+    display:flex;
+    gap:30px;
+    align-items:center;
+    flex-wrap:wrap;
+}
+
+.character-box{
+    flex:1;
+    min-width:250px;
+    text-align:center;
+}
+
+.character-box img{
+    width:100%;
+    max-width:320px;
+    border-radius:25px;
+    border:6px solid #ffd7e8;
+}
+
+.quiz-area{
+    flex:1;
+    min-width:250px;
+}
+
+.question-title{
+    font-size:22px;
+    color:#ff6fa5;
+    margin-bottom:10px;
+}
+
+.question{
+    background:#fff4cc;
+    border-radius:20px;
+    padding:25px;
+    font-size:48px;
+    text-align:center;
+    margin-bottom:20px;
+    color:#6d3d21;
+    font-weight:bold;
+}
+
+input{
+    width:100%;
+    padding:18px;
+    border-radius:18px;
+    border:3px solid #ffb7d2;
+    font-size:28px;
+    box-sizing:border-box;
+}
+
+.button-group{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+}
+
+button{
+    flex:1;
+    border:none;
+    padding:16px;
+    border-radius:18px;
+    background:#ff6fa5;
+    color:white;
+    font-size:24px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+button:hover{
+    opacity:0.9;
+}
+
+.result{
+    margin-top:25px;
+    font-size:34px;
+    font-weight:bold;
+    text-align:center;
+}
+
+.score{
+    margin-top:15px;
+    font-size:28px;
+    text-align:center;
+    color:#ff6fa5;
+    font-weight:bold;
+}
+
+.admin{
+    margin-top:30px;
+    background:white;
+    border-radius:30px;
+    padding:25px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.08);
+}
+
+.admin h2{
+    color:#7b4a2f;
+}
+
+.admin input{
+    margin-top:10px;
+    font-size:20px;
+}
+
+.word-item{
+    background:#fff3f7;
+    padding:12px;
+    margin-top:10px;
+    border-radius:15px;
+    font-size:20px;
+}
+
+.delete-btn{
+    background:red;
+    font-size:16px;
+    padding:8px 14px;
+    margin-left:10px;
+}
+
+@media(max-width:700px){
+
+    .question{
+        font-size:36px;
+    }
+
+    button{
+        font-size:20px;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="title">
+        🐱 냥냥 단어 테스트
+    </div>
+
+    <div class="quiz-box">
+
+        <div class="top">
+
+            <div class="character-box">
+
+                <img
+                id="character"
+                src="https://i.imgur.com/N0QKQYp.png"
+                alt="캐릭터">
+
+            </div>
+
+            <div class="quiz-area">
+
+                <div class="question-title">
+                    🐾 문제
+                </div>
+
+                <div class="question" id="question">
+                    사과
+                </div>
+
+                <input
+                type="text"
+                id="answer"
+                placeholder="영어를 입력해봐!">
+
+                <div class="button-group">
+
+                    <button onclick="checkAnswer()">
+                        정답 확인
+                    </button>
+
+                    <button onclick="speakQuestion()">
+                        🔊 읽기
+                    </button>
+
+                </div>
+
+                <div class="result" id="result"></div>
+
+                <div class="score">
+                    ⭐ 점수 :
+                    <span id="score">0</span>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="admin">
+
+        <h2>🐾 관리자 단어 추가</h2>
+
+        <input
+        type="text"
+        id="newMeaning"
+        placeholder="뜻 입력">
+
+        <input
+        type="text"
+        id="newWord"
+        placeholder="영어 입력">
+
+        <div class="button-group">
+
+            <button onclick="addWord()">
+                단어 추가
+            </button>
+
+        </div>
+
+        <div id="wordList"></div>
+
+    </div>
+
+</div>
+
+<script>
+
+const happyImage =
+"https://i.imgur.com/N0QKQYp.png";
+
+const sadImage =
+"https://i.imgur.com/jQ9X8oM.png";
+
+let words = JSON.parse(
+    localStorage.getItem("catWords")
+) || [
+
+    {
+        meaning:"사과",
+        word:"apple"
+    },
+
+    {
+        meaning:"학교",
+        word:"school"
+    },
+
+    {
+        meaning:"-이다",
+        word:"be"
+    }
+
+];
+
+let currentWord = {};
+let score = 0;
+
+function saveWords(){
+
+    localStorage.setItem(
+        "catWords",
+        JSON.stringify(words)
+    );
+}
+
+function loadQuestion(){
+
+    currentWord =
+    words[
+        Math.floor(
+            Math.random()*words.length
+        )
+    ];
+
+    document.getElementById(
+        "question"
+    ).innerText =
+    currentWord.meaning;
+
+    document.getElementById(
+        "answer"
+    ).value = "";
+
+    document.getElementById(
+        "result"
+    ).innerText = "";
+
+    document.getElementById(
+        "character"
+    ).src = happyImage;
+}
+
+function checkAnswer(){
+
+    const userAnswer =
+    document.getElementById(
+        "answer"
+    )
+    .value
+    .trim()
+    .toLowerCase();
+
+    const correct =
+    currentWord.word
+    .toLowerCase();
+
+    if(userAnswer === correct){
+
+        score++;
+
+        document.getElementById(
+            "result"
+        ).innerHTML =
+        "😻 정답이야! 잘했어!";
+
+        document.getElementById(
+            "result"
+        ).style.color =
+        "green";
+
+        document.getElementById(
+            "score"
+        ).innerText =
+        score;
+
+        document.getElementById(
+            "character"
+        ).src =
+        happyImage;
+
+    }else{
+
+        document.getElementById(
+            "result"
+        ).innerHTML =
+        "😭 틀렸어! 정답 : "
+        + currentWord.word;
+
+        document.getElementById(
+            "result"
+        ).style.color =
+        "red";
+
+        document.getElementById(
+            "character"
+        ).src =
+        sadImage;
+    }
+
+    setTimeout(loadQuestion, 2500);
+}
+
+function addWord(){
+
+    const meaning =
+    document.getElementById(
+        "newMeaning"
+    ).value.trim();
+
+    const word =
+    document.getElementById(
+        "newWord"
+    ).value.trim();
+
+    if(!meaning || !word){
+
+        alert("둘 다 입력해줘!");
+        return;
+    }
+
+    words.push({
+
+        meaning:meaning,
+        word:word
+
+    });
+
+    saveWords();
+
+    renderWords();
+
+    document.getElementById(
+        "newMeaning"
+    ).value = "";
+
+    document.getElementById(
+        "newWord"
+    ).value = "";
+}
+
+function deleteWord(index){
+
+    words.splice(index,1);
+
+    saveWords();
+
+    renderWords();
+}
+
+function renderWords(){
+
+    const list =
+    document.getElementById(
+        "wordList"
+    );
+
+    list.innerHTML = "";
+
+    words.forEach((item,index)=>{
+
+        list.innerHTML += `
+
+        <div class="word-item">
+
+            ${item.meaning}
+            =
+            ${item.word}
+
+            <button
+            class="delete-btn"
+            onclick="deleteWord(${index})">
+
+            삭제
+
+            </button>
+
+        </div>
+
+        `;
+    });
+}
+
+function speakQuestion(){
+
+    const speech =
+    new SpeechSynthesisUtterance(
+        currentWord.meaning
+    );
+
+    speech.lang = "ko-KR";
+
+    speechSynthesis.speak(speech);
+}
+
+renderWords();
+
+loadQuestion();
+
+</script>
+
+</body>
+</html>
